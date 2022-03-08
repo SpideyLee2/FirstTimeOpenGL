@@ -72,16 +72,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\anthonydev\FirstTimeOpenGL\FirstTimeOpenGL\vendor\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\anthonydev\FirstTimeOpenGL\FirstTimeOpenGL\vendor\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\anthonydev\FirstTimeOpenGL\vendor\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\anthonydev\FirstTimeOpenGL\vendor\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\anthonydev\FirstTimeOpenGL\FirstTimeOpenGL\vendor\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\anthonydev\FirstTimeOpenGL\FirstTimeOpenGL\vendor\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\anthonydev\FirstTimeOpenGL\vendor\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\anthonydev\FirstTimeOpenGL\vendor\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
