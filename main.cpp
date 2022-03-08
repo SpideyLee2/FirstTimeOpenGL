@@ -1,5 +1,5 @@
 /*
-* READ THE VENDORS' COMMENTS ON THE INDIVIDUAL METHODS FOR MORE DETAILS! They're quite descriptive.
+* READ THE VENDORS' COMMENTS ON THE INDIVIDUAL METHODS FOR MORE DETAILS! GLFW's are quite descriptive.
 * Notes:
 *	Frames are generated from the top-left of the screen to the bottom-right.
 *	Buffers are a space in memory for storing pixels.
@@ -48,13 +48,6 @@ int main() {
 	// An openGL profile is a package of functions. There are only two (CORE and COMPATIBILITY).
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	// Vertices for an equilateral triangle (x,y,z)
-	GLfloat vertices[] = {
-		-0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,
-		0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,
-		0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f
-	};
-
 	// Creates a GLFW window of size 1280x720 with a title and in windowed mode.
 	GLFWwindow* window = glfwCreateWindow(1280, 720, "FirstTimeOpenGL", NULL, NULL);
 	// Error checking in case window doesn't get created for whatever reason.
@@ -67,6 +60,29 @@ int main() {
 	glfwMakeContextCurrent(window);
 	// ===========================================================================================
 
+	//// Vertices for an equilateral triangle (x,y,z)
+	//GLfloat vertices[] = {
+	//	-0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,	// Lower left corner
+	//	0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,	// Lower right corner
+	//	0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f						// Upper corner
+	//};
+
+	// Vertices for an equilateral triangle with triange cutout in center
+	GLfloat vertices[] = {
+		-0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,		// Lower left corner
+		0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,		// Lower right corner
+		0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f,							// Upper corner
+		-0.5f * ((float)720 / 1280) / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	// Inner left
+		0.5f * ((float)720 / 1280) / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	// Inner right
+		0.0f, -0.5f * float(sqrt(3)) / 3, 0.0f								// Inner down
+	};
+
+	// Indices for referencing vertices when generating index buffer
+	GLuint indices[] = {
+		0, 3, 5,	// Lower left triangle
+		3, 2, 4,	// Upper triangle
+		5, 4, 1		// Lower right triangle
+	};
 
 	// Glad loads the immediate configurations for openGL.
 	gladLoadGL();
@@ -99,18 +115,21 @@ int main() {
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
-	// Vertex buffer object
-	// VBO is actually an array of references, but there's only one object, so we only need one.
-	// VAO stores pointers to one or more VBOs and tells openGL how to interpret them.
-	GLuint VAO, VBO;
+	// VBO (Vertex Buffer Object) is actually an array of references, but there's only one object, 
+	// so we only need one.
+	// VAO (Vertex Array Object) stores pointers to one or more VBOs and tells openGL how to 
+	// interpret them.
+	// EBO (Entity Buffer Object) stores the indices.
+	GLuint VAO, VBO, EBO;
 	glGenVertexArrays(1, &VAO); // The VAO MUST be generated before the VBO.
 	// Generates the buffer object containing 1 objects.
 	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+
 	// Binds VAO
 	glBindVertexArray(VAO);
 	// Binds VBO to GL_ARRAY_BUFFER, making VBO the binded object.
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// Stores vertices in the VBO.
 	// GL_STREAM_...	- vertices will be modified once and used a few times.
 	// GL_STATIC_...	- vertices will be modified once and used many times.
 	// GL_DYNAMIC_...	- vertices will be modified many times and used many times.
@@ -118,15 +137,25 @@ int main() {
 	// GL_..._READ 		- vertices will read the buffer object into it.
 	// GL_..._COPY 		- vertices will read the buffer object into it and be used to draw an image 
 	//					  on the screen.
+	// Stores vertices in the VBO.
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	// Stores indices in the EBO.
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
 	// Configures the VAO so openGL knows how to use the VBO
 	// glVertexAttribPointer(pos of vertex attrib, num values per vertex, type of values, 
-	//						 coords are integers?, size of vertices, pointer to vertices begin in array)
+	//						 coords are integers?, size of vertices, 
+	//						 pointer to vertices begin in array)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	// Unbinds VBO and VBA to prevent accidentally changing them.
+
+	// Unbinds VBO, VBA, and EBO to prevent accidentally changing them.
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Must be unbinded after VAO since it is stored in 
+											  // the VAO.
 
 
 	// Clears the color of the buffer and gives it another color.
@@ -150,7 +179,9 @@ int main() {
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
 		// glDrawArrays(primitive, start index of vertices, num vertices to draw)
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		// glDrawElements(primitive, num indices, indices data type, start index of indices)
+		glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 		glfwSwapBuffers(window);
 
 		// Tells GLFW to process all polled events (resize, close, minimize, etc.)
@@ -160,6 +191,7 @@ int main() {
 	// Memory cleanup
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 	glDeleteProgram(shaderProgram);
 
 	glfwDestroyWindow(window);
