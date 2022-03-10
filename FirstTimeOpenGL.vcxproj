@@ -147,11 +147,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Objects\EBO.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="vendor\include\glad\glad.c" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Shaders\ShaderClass.cpp" />
+    <ClCompile Include="ShaderClass.cpp" />
     <ClCompile Include="Objects\VAO.cpp" />
     <ClCompile Include="Objects\VBO.cpp" />
+    <ClCompile Include="stb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\default.frag" />
@@ -159,9 +161,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Objects\EBO.h" />
-    <ClInclude Include="Shaders\ShaderClass.h" />
+    <ClInclude Include="ShaderClass.h" />
     <ClInclude Include="Objects\VAO.h" />
     <ClInclude Include="Objects\VBO.h" />
+    <ClInclude Include="Texture.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="pop_cat.png" />
+    <Image Include="Textures\pop_cat.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
