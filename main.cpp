@@ -43,6 +43,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb/stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Objects/VBO.h"
 #include "Objects/VAO.h"
@@ -50,19 +53,27 @@
 #include "ShaderClass.h"
 #include "Texture.h"
 
-// Vertices for a square
-//		   COORDS		//		 COLORS			//	TEX COORDS
+const unsigned int width = 800;
+const unsigned int height = 800;
+
+// Vertices for a pyramid
+//		   COORDS		 //		  COLORS			//	TEX COORDS
 GLfloat vertices[] = {
-	-0.5f, -0.5f, 0.0f,		0.8f, 0.3f, 0.02f,		0.0f, 0.0f,	// Lower left corner
-	-0.5f,  0.5f, 0.0f,		0.8f, 0.3f, 0.02f,		0.0f, 1.0f, // Upper left corner
-	 0.5f,  0.5f, 0.0f,		1.0f, 0.6f, 0.32f,		1.0f, 1.0f,	// Upper right corner
-	 0.5f, -0.5f, 0.0f,		0.9f, 0.45f, 0.17f,		1.0f, 0.0f // Lower right corner
+	-0.5f, 0.0f,  0.5f,		0.83f, 0.70f, 0.44f,	0.0f, 0.0f,	// Lower left corner
+	-0.5f, 0.0f, -0.5f,		0.83f, 0.70f, 0.44f,	5.0f, 0.0f, // Upper left corner
+	 0.5f, 0.0f, -0.5f,		0.83f, 0.70f, 0.44f,	0.0f, 0.0f,	// Upper right corner
+	 0.5f, 0.0f,  0.5f,		0.83f, 0.70f, 0.44f,	5.0f, 0.0f,	// Lower right corner
+	 0.0f, 0.8f,  0.0f,		0.92f, 0.86f, 0.76f,	2.5f, 5.0f	// Peak
 };
 
 // Indices of square
 GLuint indices[] = {
-	0, 2, 1,	// Upper triangle
-	0, 3, 2		// Lower triangle
+	0, 1, 2,
+	0, 2, 3,
+	0, 1, 4,
+	1, 2, 4,
+	2, 3, 4,
+	3, 0, 4
 };
 
 int main() {
@@ -79,7 +90,7 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Creates a GLFW window of size 1280x720 with a title and in windowed mode.
-	GLFWwindow* window = glfwCreateWindow(800, 800, "FirstTimeOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(width, height, "FirstTimeOpenGL", NULL, NULL);
 	// Error checking in case window doesn't get created for whatever reason.
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -94,7 +105,7 @@ int main() {
 	gladLoadGL();
 
 	// Area of the window that openGL should be rendered in (bottom-left to top-right).
-	glViewport(0, 0, 800, 800);
+	glViewport(0, 0, width, height);
 
 	// Creates the shader program from the vertex and fragement shader files.
 	Shader shaderProgram("Shaders/default.vert", "Shaders/default.frag");
@@ -124,9 +135,16 @@ int main() {
 	// Gets the reference value of the scale uniform in the shader program (in default.vert).
 	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
-	// Creates the popCat texture and assigns it to the 0th texture unit.
-	Texture popCat("pop_cat.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-	popCat.TexUnit(shaderProgram, "tex0", 0);
+	// Creates the brick texture and assigns it to the 0th texture unit.
+	Texture brickTex("brick.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+	brickTex.TexUnit(shaderProgram, "tex0", 0);
+
+	// Variables that help the rotation of the pyramid.
+	float rotation = 0.0f;
+	double prevTime = glfwGetTime();
+
+	// Enables the depth buffer. Otherwise, openGL doesn't know which faces to render on top.
+	glEnable(GL_DEPTH_TEST);
 
 	// Keeps the window open until it should close. The closing condition can be the close button 
 	// or another function.
@@ -134,21 +152,51 @@ int main() {
 		// Clears the color of the buffer and gives it another color.
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f); // Navy Blue
 		// Specifies to openGL to use the previous command on the color buffer.
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// Activates shader program
 		shaderProgram.Activate();
+
+		// Changes rotation by 0.5 degrees every 1/60 second.
+		double currTime = glfwGetTime();
+		if (currTime - prevTime >= 1 / 60) {
+			rotation += 0.5f;
+			prevTime = currTime;
+		}
+
+		// Used to convert local coords to world coords
+		glm::mat4 model = glm::mat4(1.0f);
+		// Used to convert world coords to view coords
+		glm::mat4 view = glm::mat4(1.0f);
+		// Used to convert view coords to clip coords (perspective)
+		glm::mat4 proj = glm::mat4(1.0f);
+		// Conversion to screen space is done automatically.
+
+		// Rotates the model matrix across the y-axis
+		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+		// Moves world down 0.5 and away 2.0
+		view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
+		// Specifies details of the projection matrix
+		// glm::perspective(field of view, aspect ratio, closest clip plane, furthest clip plane)
+		proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 100.0f);
+		
+		// Imports the vec4 uniform from the shader program into the vertex shader.
+		int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
+		// glUniformMatrix4fv(location, count, transpose?, pointer to matrix);
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+		int projLoc = glGetUniformLocation(shaderProgram.ID, "proj");
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
 
 		// Scales the items drawn to the screen to 1.5x size.
 		glUniform1f(uniID, 0.5f); // Can ONLY be done after the shader program is activated.
 
-		popCat.Bind();
+		brickTex.Bind();
 
 		vao1.Bind();
 
-		// glDrawArrays(primitive, start index of vertices, num vertices to draw)
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		// glDrawElements(primitive, num indices, indices data type, start index of indices)
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
 
 		// The back buffer contains the color we want. This swaps the front and back buffer.
 		glfwSwapBuffers(window);
@@ -161,7 +209,7 @@ int main() {
 	vao1.Delete();
 	vbo1.Delete();
 	ebo1.Delete();
-	popCat.Delete();
+	brickTex.Delete();
 	shaderProgram.Delete();
 
 	glfwDestroyWindow(window);

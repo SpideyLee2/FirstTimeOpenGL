@@ -6,7 +6,7 @@ VAO::VAO() {
 }
 
 // Links VBO to VAO
-void VAO::LinkAttrib(VBO vbo, GLuint layout, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset) {
+void VAO::LinkAttrib(VBO& vbo, GLuint layout, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset) {
 	vbo.Bind();
 
 	// Configures the VAO so openGL knows how to use the VBO
