@@ -17,16 +17,48 @@
 *	Binding in openGL means making a certain object the current (binded) object. The binded object 
 	catches function calls to objects of that type.
 *	OpenGL doesn't provide defaults for vertex and fragment shaders.
+*	If a primitive has different colors at its vertices, openGL will create a gradient (interpolation).
+* 
+*	Shaders
+*		Don't declare uniforms unless you're going to use them because openGL will delete them.
 */
 
 #include <iostream>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "VBO.h"
-#include "VAO.h"
-#include "EBO.h"
-#include "ShaderClass.h"
 
+#include "Objects/VBO.h"
+#include "Objects/VAO.h"
+#include "Objects/EBO.h"
+#include "Shaders/ShaderClass.h"
+
+const float REV_ASPECT_RATIO = (float)720 / 1280;
+
+//// Vertices for an equilateral triangle (x,y,z)
+//GLfloat vertices[] = {
+//	-0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,	// Lower left corner
+//	0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,	// Lower right corner
+//	0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f						// Upper corner
+//};
+
+// Vertices for an equilateral triangle with triange cutout in center
+//								COORDINATES								  /		COLORS
+GLfloat vertices[] = {
+	-0.5f * REV_ASPECT_RATIO,		-0.5f * float(sqrt(3)) / 3,		0.0f,	0.8f, 0.3f, 0.02f,	// Lower left corner
+	 0.5f * REV_ASPECT_RATIO,		-0.5f * float(sqrt(3)) / 3,		0.0f,	0.8f, 0.3f, 0.02f,	// Lower right corner
+	 0.0f,							 0.5f * float(sqrt(3)) * 2 / 3, 0.0f,	1.0f, 0.6f, 0.32f,	// Upper corner
+	-0.5f * REV_ASPECT_RATIO / 2,	 0.5f * float(sqrt(3)) / 6,		0.0f,	0.9f, 0.45f, 0.17f,	// Inner left
+	 0.5f * REV_ASPECT_RATIO / 2,	 0.5f * float(sqrt(3)) / 6,		0.0f,	0.9f, 0.45f, 0.17f,	// Inner right
+	 0.0f,							-0.5f * float(sqrt(3)) / 3,		0.0f,	0.8f, 0.3f, 0.02f	// Inner down
+};
+
+// Indices for referencing vertices when generating index buffer
+GLuint indices[] = {
+	0, 3, 5,	// Lower left triangle
+	3, 2, 4,	// Upper triangle
+	5, 4, 1		// Lower right triangle
+};
 
 int main() {
 	// =============================== USING GLFW TO MAKE A WINDOW ===============================
@@ -53,30 +85,6 @@ int main() {
 	glfwMakeContextCurrent(window);
 	// ===========================================================================================
 
-	//// Vertices for an equilateral triangle (x,y,z)
-	//GLfloat vertices[] = {
-	//	-0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,	// Lower left corner
-	//	0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,	// Lower right corner
-	//	0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f						// Upper corner
-	//};
-
-	// Vertices for an equilateral triangle with triange cutout in center
-	GLfloat vertices[] = {
-		-0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,		// Lower left corner
-		0.5f * ((float)720 / 1280), -0.5f * float(sqrt(3)) / 3, 0.0f,		// Lower right corner
-		0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f,							// Upper corner
-		-0.5f * ((float)720 / 1280) / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	// Inner left
-		0.5f * ((float)720 / 1280) / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,	// Inner right
-		0.0f, -0.5f * float(sqrt(3)) / 3, 0.0f								// Inner down
-	};
-
-	// Indices for referencing vertices when generating index buffer
-	GLuint indices[] = {
-		0, 3, 5,	// Lower left triangle
-		3, 2, 4,	// Upper triangle
-		5, 4, 1		// Lower right triangle
-	};
-
 	// Glad loads the immediate configurations for openGL.
 	gladLoadGL();
 
@@ -84,7 +92,7 @@ int main() {
 	glViewport(0, 0, 1280, 720);
 
 	// Creates the shader program from the vertex and fragement shader files.
-	Shader shaderProgram("default.vert", "default.frag");
+	Shader shaderProgram("Shaders/default.vert", "Shaders/default.frag");
 
 	// Generates Vertex Array Object and binds it.
 	VAO vao1;
@@ -96,12 +104,17 @@ int main() {
 	EBO ebo1(indices, sizeof(indices));
 
 	// Links VBO to VAO
-	vao1.LinkVBO(vbo1, 0);
+	// First call is to link the coordinates, second call is to link the colors.
+	vao1.LinkAttrib(vbo1, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
+	vao1.LinkAttrib(vbo1, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
-	// Prevents modifying these objects by accident.
+	// Unbind all to prevent modifying these objects later on.
 	vao1.Unbind();
 	vbo1.Unbind();
 	ebo1.Unbind();
+
+	// Gets the reference value of the scale uniform in the shader program (in default.vert).
+	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
 	// Keeps the window open until it should close. The closing condition can be the close button 
 	// or another function.
@@ -112,6 +125,9 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 		// Activates shader program
 		shaderProgram.Activate();
+
+		// Scales the items drawn to the screen to 1.5x size.
+		glUniform1f(uniID, 0.5f); // Can ONLY be done after the shader program is activated.
 
 		vao1.Bind();
 
