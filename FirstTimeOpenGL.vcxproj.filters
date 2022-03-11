@@ -1214,28 +1214,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Textures\pop_cat.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="pop_cat.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="Textures\brick.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="brick.png">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="Textures\planks.png">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Textures\planksSpec.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="planks.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="planksSpec.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

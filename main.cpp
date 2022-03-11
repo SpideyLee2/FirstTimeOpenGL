@@ -194,10 +194,10 @@ int main() {
 	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
 	// Creates the planks texture and assigns it to the 0th texture unit.
-	Texture planksTex("planks.png", GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+	Texture planksTex("Textures/planks.png", GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 	planksTex.TexUnit(shaderProgram, "tex0", 0);
 	// Creates the planks specular texture and assigns it to the 1st texture unit.
-	Texture planksSpec("planksSpec.png", GL_TEXTURE_2D, 1, GL_RED, GL_UNSIGNED_BYTE);
+	Texture planksSpec("Textures/planksSpec.png", GL_TEXTURE_2D, 1, GL_RED, GL_UNSIGNED_BYTE);
 	planksSpec.TexUnit(shaderProgram, "tex1", 1);
 
 	// Enables the depth buffer. Otherwise, openGL doesn't know which faces to render on top.
@@ -234,6 +234,7 @@ int main() {
 		// glDrawElements(primitive, num indices, indices data type, start index of indices)
 		glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
 
+		// Activates the light shader so light can be used in the scene
 		lightShader.Activate();
 		camera.Matrix(lightShader, "camMatrix");
 		lightVAO.Bind();
