@@ -2,7 +2,7 @@
 
 Camera::Camera(int width, int height, glm::vec3 pos) : width(width), height(height), pos(pos) {}
 
-void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform) {
+void Camera::UpdateMatrix(float FOVdeg, float nearPlane, float farPlane) {
 	// Used to convert world coords into view coords
 	glm::mat4 view = glm::mat4(1.0f);
 	// Used to convert view coords into clip coords
@@ -14,8 +14,13 @@ void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shade
 	// glm::perspective(field of view, aspect ratio, closest clip plane, furthest clip plane)
 	proj = glm::perspective(glm::radians(FOVdeg), (float)(width / height), nearPlane, farPlane);
 
+	// Assigns the camera matrix
+	cameraMatrix = proj * view;
+}
+
+void Camera::Matrix(Shader& shader, const char* uniform) {
 	// Exports the camera matrix to the vertex shader
-	glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(proj * view));
+	glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
 }
 
 void Camera::Inputs(GLFWwindow* window) {

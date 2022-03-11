@@ -458,6 +458,8 @@
     <None Include="vendor\include\glm\gtx\wrap.inl">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="Shaders\light.frag" />
+    <None Include="Shaders\light.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderClass.h">

@@ -16,6 +16,8 @@ public:
 	glm::vec3 pos;
 	glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+	// Stores the camera matrix
+	glm::mat4 cameraMatrix = glm::mat4(1.0f);
 
 	// Prevents the camera from jumping around when first clicking left click
 	bool firstClick = true;
@@ -29,8 +31,10 @@ public:
 
 	Camera(int width, int height, glm::vec3 pos);
 
-	// Updates and exports the camera matrix to the vertex shader
-	void Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform);
+	// Updates the camera matrix
+	void UpdateMatrix(float FOVdeg, float nearPlane, float farPlane);
+	// Exports the camera matrix to the vertex shader
+	void Matrix(Shader& shader, const char* uniform);
 	// Handles camera inputs
 	void Inputs(GLFWwindow* window);
 };
