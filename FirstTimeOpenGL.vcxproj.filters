@@ -1226,5 +1226,17 @@
     <Image Include="brick.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Textures\planks.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\planksSpec.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="planks.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="planksSpec.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

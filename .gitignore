@@ -1,2 +1,5 @@
 #Files
 *.user
+
+#Folders
+*/OneNote_RecycleBin/

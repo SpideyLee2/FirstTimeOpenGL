@@ -1,6 +1,6 @@
 #include "Texture.h"
 
-Texture::Texture(const char* image, GLenum texType, GLenum slot, GLenum format, GLenum pixelType) : type(texType) {
+Texture::Texture(const char* image, GLenum texType, GLuint slot, GLenum format, GLenum pixelType) : type(texType) {
 	// Flips the image right-side-up, reads the image from a file, and stores it in bytes.
 	int widthImg, heightImg, numColorCh;
 	stbi_set_flip_vertically_on_load(true);
@@ -10,7 +10,8 @@ Texture::Texture(const char* image, GLenum texType, GLenum slot, GLenum format, 
 	float flatColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glGenTextures(1, &ID);
 	// Insert texture into texture unit slot
-	glActiveTexture(slot);
+	glActiveTexture(GL_TEXTURE0 + slot);
+	unit = slot;
 	glBindTexture(texType, ID);
 
 	// Sets the binded texture to render using GL_NEAREST (pixelated)
@@ -44,6 +45,7 @@ void Texture::TexUnit(Shader& shader, const char* uniform, GLuint unit) {
 }
 
 void Texture::Bind() {
+	glActiveTexture(GL_TEXTURE0 + unit);
 	glBindTexture(type, ID);
 }
 

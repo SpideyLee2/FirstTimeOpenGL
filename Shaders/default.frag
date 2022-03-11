@@ -17,6 +17,8 @@ in vec3 currPos;
 
 // Gets the texture unit from the main function
 uniform sampler2D tex0;
+// Gets the texture unit for the previous texture's specular map from the main function
+uniform sampler2D tex1;
 
 // Gets the color of the light from the main function
 uniform vec4 lightColor;
@@ -47,10 +49,10 @@ void main() {
 	// Stores the direction of the light reflection
 	vec3 reflectionDirection = reflect(-lightDirection, normal);
 	// Stores how much specular light there is at a certain angle
-	float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 30);
+	float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 16);
 	// Stores the specular value
 	float specular = specAmount * specularLight;
 
 	// Outputs textured and lit color
-	FragColor = texture(tex0, texCoord) * lightColor * (diffuse + ambient + specular);
+	FragColor = texture(tex0, texCoord) * lightColor * (diffuse + ambient) + texture(tex1, texCoord).r * specular;
 }

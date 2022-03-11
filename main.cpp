@@ -57,29 +57,13 @@
 const unsigned int width = 800;
 const unsigned int height = 800;
 
-// Vertices for a pyramid
+// Vertices of plane
 GLfloat vertices[] = {
-//		  COORDS		//		  COLORS		 //	 TEX COORDS   //	   NORMALS
-	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 5.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, -1.0f, 0.0f, // Bottom side
-
-	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
-	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,     -0.8f, 0.5f,  0.0f, // Left Side
-	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,     -0.8f, 0.5f,  0.0f, // Left Side
-
-	-0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
-	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
-	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.0f, 0.5f, -0.8f, // Non-facing side
-
-	 0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	 0.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
-	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.8f, 0.5f,  0.0f, // Right side
-	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.8f, 0.5f,  0.0f, // Right side
-
-	 0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	 5.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
-	-0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f, 	 0.0f, 0.0f,      0.0f, 0.5f,  0.8f, // Facing side
-	 0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	 2.5f, 5.0f,      0.0f, 0.5f,  0.8f  // Facing side
+//		  COORDS		//		 COLORS		  // TEX COORDS  //		NORMALS
+	-1.0f, 0.0f,  1.0f,     0.0f, 0.0f, 0.0f, 	 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	// Top side
+	-1.0f, 0.0f, -1.0f,     0.0f, 0.0f, 0.0f,	 0.0f, 1.0f,	0.0f, 1.0f, 0.0f,	// Top side
+	 1.0f, 0.0f, -1.0f,     0.0f, 0.0f, 0.0f,	 1.0f, 1.0f,	0.0f, 1.0f, 0.0f,	// Top side
+	 1.0f, 0.0f,  1.0f,     0.0f, 0.0f, 0.0f,	 1.0f, 0.0f,	0.0f, 1.0f, 0.0f,	// Top side
 };
 
 // Indices of square
@@ -209,9 +193,12 @@ int main() {
 	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
 	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 
-	// Creates the brick texture and assigns it to the 0th texture unit.
-	Texture brickTex("brick.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
-	brickTex.TexUnit(shaderProgram, "tex0", 0);
+	// Creates the planks texture and assigns it to the 0th texture unit.
+	Texture planksTex("planks.png", GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+	planksTex.TexUnit(shaderProgram, "tex0", 0);
+	// Creates the planks specular texture and assigns it to the 1st texture unit.
+	Texture planksSpec("planksSpec.png", GL_TEXTURE_2D, 1, GL_RED, GL_UNSIGNED_BYTE);
+	planksSpec.TexUnit(shaderProgram, "tex1", 1);
 
 	// Enables the depth buffer. Otherwise, openGL doesn't know which faces to render on top.
 	glEnable(GL_DEPTH_TEST);
@@ -234,12 +221,16 @@ int main() {
 		// Activates shader program
 		shaderProgram.Activate();
 
+		// Exports the camera position to the fragment shader
 		glUniform3f(glGetUniformLocation(shaderProgram.ID, "camPos"), camera.pos.x, camera.pos.y, camera.pos.z);
 
 		// Exports the camera matrix to the vertex shader
 		camera.Matrix(shaderProgram, "camMatrix");
-		brickTex.Bind();
+
+		planksTex.Bind();
+		planksSpec.Bind();
 		vao1.Bind();
+
 		// glDrawElements(primitive, num indices, indices data type, start index of indices)
 		glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int), GL_UNSIGNED_INT, 0);
 
@@ -259,7 +250,8 @@ int main() {
 	vao1.Delete();
 	vbo1.Delete();
 	ebo1.Delete();
-	brickTex.Delete();
+	planksTex.Delete();
+	planksSpec.Delete();
 	shaderProgram.Delete();
 
 	glfwDestroyWindow(window);
