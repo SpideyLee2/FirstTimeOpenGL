@@ -52,6 +52,7 @@
 #include "Objects/EBO.h"
 #include "ShaderClass.h"
 #include "Texture.h"
+#include "Camera.h"
 
 const unsigned int width = 800;
 const unsigned int height = 800;
@@ -132,19 +133,15 @@ int main() {
 	vbo1.Unbind();
 	ebo1.Unbind();
 
-	// Gets the reference value of the scale uniform in the shader program (in default.vert).
-	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
-
 	// Creates the brick texture and assigns it to the 0th texture unit.
 	Texture brickTex("brick.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 	brickTex.TexUnit(shaderProgram, "tex0", 0);
 
-	// Variables that help the rotation of the pyramid.
-	float rotation = 0.0f;
-	double prevTime = glfwGetTime();
-
 	// Enables the depth buffer. Otherwise, openGL doesn't know which faces to render on top.
 	glEnable(GL_DEPTH_TEST);
+
+	// Initializes a camera that is 2 away from the world origin
+	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
 
 	// Keeps the window open until it should close. The closing condition can be the close button 
 	// or another function.
@@ -156,40 +153,10 @@ int main() {
 		// Activates shader program
 		shaderProgram.Activate();
 
-		// Changes rotation by 0.5 degrees every 1/60 second.
-		double currTime = glfwGetTime();
-		if (currTime - prevTime >= 1 / 60) {
-			rotation += 0.5f;
-			prevTime = currTime;
-		}
-
-		// Used to convert local coords to world coords
-		glm::mat4 model = glm::mat4(1.0f);
-		// Used to convert world coords to view coords
-		glm::mat4 view = glm::mat4(1.0f);
-		// Used to convert view coords to clip coords (perspective)
-		glm::mat4 proj = glm::mat4(1.0f);
-		// Conversion to screen space is done automatically.
-
-		// Rotates the model matrix across the y-axis
-		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-		// Moves world down 0.5 and away 2.0
-		view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-		// Specifies details of the projection matrix
-		// glm::perspective(field of view, aspect ratio, closest clip plane, furthest clip plane)
-		proj = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 100.0f);
-		
-		// Imports the vec4 uniform from the shader program into the vertex shader.
-		int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
-		// glUniformMatrix4fv(location, count, transpose?, pointer to matrix);
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-		int projLoc = glGetUniformLocation(shaderProgram.ID, "proj");
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-
-		// Scales the items drawn to the screen to 1.5x size.
-		glUniform1f(uniID, 0.5f); // Can ONLY be done after the shader program is activated.
+		// Provides inputs for moving the camera around the world
+		camera.Inputs(window);
+		// Defines the camera's view and projection matrices
+		camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
 		brickTex.Bind();
 

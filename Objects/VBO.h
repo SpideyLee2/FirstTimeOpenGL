@@ -1,19 +1,17 @@
-#ifndef VBO_CLASS_H
-	#define VBO_CLASS_H
+#pragma once
 
-	#include<glad/glad.h>
+#include<glad/glad.h>
 
-	// VBO (Vertex Buffer Object) is an array of references.
-	class VBO {
-	public:
-		// Reference ID of the VBO.
-		GLuint ID;
+// VBO (Vertex Buffer Object) is an array of references.
+class VBO {
+public:
+	// Reference ID of the VBO.
+	GLuint ID;
 
-		// Constructor that generates a VBO and links it to indices.
-		VBO(GLfloat* vertices, GLsizeiptr size);
+	// Constructor that generates a VBO and links it to indices.
+	VBO(GLfloat* vertices, GLsizeiptr size);
 
-		void Bind();
-		void Unbind();
-		void Delete();
-	};
-#endif
+	void Bind();
+	void Unbind();
+	void Delete();
+};
