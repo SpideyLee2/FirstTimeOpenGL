@@ -3,22 +3,19 @@
 // Outputs colors in RGBA
 out vec4 FragColor;
 
+// Imports the current position from the vertex shader
+in vec3 currPos;
+// Imports the normal (not necessarily normalized) from the vertex shader
+in vec3 normal;
 // Imports the color from the vertex shader
 in vec3 color;
-
 // Imports the texture coordinates from the vertex shader
 in vec2 texCoord;
 
-// Imports the normal (not necessarily normalized) from the vertex shader
-in vec3 normal;
-
-// Imports the current position from the vertex shader
-in vec3 currPos;
-
 // Gets the texture unit from the main function
-uniform sampler2D tex0;
+uniform sampler2D diffuse0;
 // Gets the texture unit for the previous texture's specular map from the main function
-uniform sampler2D tex1;
+uniform sampler2D specular0;
 
 // Gets the color of the light from the main function
 uniform vec4 lightColor;
@@ -62,7 +59,7 @@ vec4 PointLight() {
 	float specular = specAmount * specularLight;
 
 	// Outputs textured and lit color
-	return (texture(tex0, texCoord) * (diffuse + ambient) + texture(tex1, texCoord).r * specular * intensity) * lightColor;
+	return (texture(diffuse0, texCoord) * (diffuse + ambient) + texture(specular0, texCoord).r * specular * intensity) * lightColor;
 }
 
 vec4 DirecLight() {
@@ -83,7 +80,7 @@ vec4 DirecLight() {
 	float specular = specAmount * specularLight;
 
 	// Outputs textured and lit color
-	return (texture(tex0, texCoord) * (diffuse + ambient) + texture(tex1, texCoord).r * specular) * lightColor;
+	return (texture(diffuse0, texCoord) * (diffuse + ambient) + texture(specular0, texCoord).r * specular) * lightColor;
 }
 
 vec4 SpotLight() {
@@ -111,9 +108,9 @@ vec4 SpotLight() {
 	float intensity = clamp((angle - outerCone) / (innerCone - outerCone), 0.0f, 1.0f);
 
 	// Outputs textured and lit color
-	return (texture(tex0, texCoord) * (diffuse * intensity + ambient) + texture(tex1, texCoord).r * specular * intensity) * lightColor;
+	return (texture(diffuse0, texCoord) * (diffuse * intensity + ambient) + texture(specular0, texCoord).r * specular * intensity) * lightColor;
 }
 
 void main() {
-	FragColor = SpotLight();
+	FragColor = PointLight();
 }

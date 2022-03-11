@@ -147,6 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Objects\EBO.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="vendor\include\glad\glad.c" />
@@ -299,6 +300,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="Objects\EBO.h" />
     <ClInclude Include="ShaderClass.h" />
     <ClInclude Include="Objects\VAO.h" />

@@ -1,6 +1,7 @@
 #pragma once
 
-#include<glad/glad.h>
+#include <glad/glad.h>
+#include <vector>
 
 // EBO (Entity Buffer Object) stores the indices.
 class EBO {
@@ -9,7 +10,7 @@ public:
 	GLuint ID;
 
 	// Constructor that generates a EBO and links it to indices.
-	EBO(GLuint* indices, GLsizeiptr size);
+	EBO(std::vector<GLuint> indices);
 
 	void Bind();
 	void Unbind();
